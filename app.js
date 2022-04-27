@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const Discord = require("discord.js");
 const token = process.env.TOKEN;
+const apikey = process.env.APIKEY;
 const bot = new Discord.Client();
 const axios = require("axios");
 
@@ -185,7 +186,7 @@ async function callUrbanApi(nameString) {
     params: { term: nameString },
     headers: {
       "X-RapidAPI-Host": "mashape-community-urban-dictionary.p.rapidapi.com",
-      "X-RapidAPI-Key": "19da498aadmshd1081c0101cbca8p17776djsnc06d17dbaf4b",
+      "X-RapidAPI-Key": apikey,
     },
   };
 
@@ -351,7 +352,23 @@ bot.on("message", (msg) => {
     msg.channel.send(
       `**__Commands List:__**\n;start - start caring for ${user} \n;user <tag> - start caring for somebody else \n;time <time in 24hr clock> - change time to show care \n;stop - stop caring for ${user}`
     );
-  } else if (msg.content.startsWith(";testingfeature")) {}
+  } else if (msg.content.startsWith(";testingfeature")) {
+    urbanDictionary('ho','chi').then(
+      (result) => {
+        msg.channel.send(
+          `Urban Dictionary: **${result.payload}**\n>>> **${
+            result.word
+          }**\n${result.definition}\n*${result.example}*\nby **${
+            result.author
+          }** ${result.written_on.toLocaleString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })}\n<${result.permalink}>`
+        );
+      }
+    );
+  }
 });
 
 port = process.env.PORT;
