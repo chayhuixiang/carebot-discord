@@ -259,17 +259,23 @@ bot.on("ready", () => {
           );
           urbanDictionary(classmate.firstName, classmate.lastName).then(
             (result) => {
-              channel.send(
-                `Urban Dictionary: **${result.payload}**\n>>> **${
-                  result.word
-                }**\n${result.definition}\n*${result.example}*\nby **${
-                  result.author
-                }** ${result.written_on.toLocaleString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}\n<${result.permalink}>`
-              );
+              if (result.success){
+                channel.send(
+                  `Urban Dictionary: **${result.payload}**\n>>> **${
+                    result.word
+                  }**\n${result.definition}\n*${result.example}*\nby **${
+                    result.author
+                  }** ${result.written_on.toLocaleString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}\n<${result.permalink}>`
+                );
+              } else {
+                channel.send(
+                  `Urban Dictionary: **${result.payload}**\n>>> Aww. No results obtained.`
+                );
+              }
             }
           );
         }
@@ -355,17 +361,23 @@ bot.on("message", (msg) => {
   } else if (msg.content.startsWith(";testingfeature")) {
     urbanDictionary('ho','chi').then(
       (result) => {
-        msg.channel.send(
-          `Urban Dictionary: **${result.payload}**\n>>> **${
-            result.word
-          }**\n${result.definition}\n*${result.example}*\nby **${
-            result.author
-          }** ${result.written_on.toLocaleString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })}\n<${result.permalink}>`
-        );
+        if (result.success){
+          msg.channel.send(
+            `Urban Dictionary: **${result.payload}**\n>>> **${
+              result.word
+            }**\n${result.definition}\n*${result.example}*\nby **${
+              result.author
+            }** ${result.written_on.toLocaleString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })}\n<${result.permalink}>`
+          );
+        } else {
+          msg.channel.send(
+            `Urban Dictionary: **${result.payload}**\n>>> Aww. No results obtained.`
+          );
+        }
       }
     );
   }
