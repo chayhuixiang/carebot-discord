@@ -3,6 +3,7 @@ require("dotenv").config();
 const Discord = require("discord.js");
 const token = process.env.TOKEN;
 const bot = new Discord.Client();
+const axios = require("axios");
 
 const express = require("express");
 const app = express();
@@ -18,118 +19,226 @@ const birthdays = [
     name: "<@!285034326951723009>", //Zhi Qing
     birthday: "08/02",
     pronoun: "her",
+    firstName: "zhi",
+    lastName: "qing",
   },
   {
     name: "<@!283213199900147713>", //Tian Lang
     birthday: "14/02",
     pronoun: "him",
+    firstName: "tian",
+    lastName: "lang",
   },
   {
     name: "<@!283072899085238283>", //Zheng Long
     birthday: "16/02",
     pronoun: "him",
+    firstName: "zheng",
+    lastName: "long",
   },
   {
     name: "<@!283072887538188288>", //Yang Han
     birthday: "18/03",
     pronoun: "him",
+    firstName: "yang",
+    lastName: "han",
   },
   {
     name: "<@!283076595957104641>", //Kaiwen
     birthday: "19/04",
     pronoun: "him",
+    firstName: "kai",
+    lastName: "wen",
   },
   // {
-  //     "name":"<@!194062517020917760>", //Hui Xiang
-  //     "birthday":"23/04",
-  //     "pronoun":"him"
+  //     name:"<@!194062517020917760>", //Hui Xiang
+  //     birthday:"23/04",
+  //     pronoun:"him",
+  //     firstName: "hui",
+  //     lastName: "xiang"
   // },
   {
     name: "<@!285035648568786954>", //Ryan
     birthday: "28/04",
     pronoun: "him",
+    firstName: "ryan",
+    lastName: "",
   },
   {
     name: "<@!283248292668768256>", //Kevin
     birthday: "12/05",
     pronoun: "him",
+    firstName: "kevin",
+    lastName: "",
   },
   {
     name: "<@!269504508176891905>", //Ho Chi
     birthday: "23/05",
     pronoun: "him",
+    firstName: "ho",
+    lastName: "chi",
   },
   {
     name: "<@!283072989728342016>", //Yongxi
     birthday: "01/06",
     pronoun: "him",
+    firstName: "yong",
+    lastName: "xi",
   },
   {
     name: "<@!283071539539345410>", //Shukai
     birthday: "12/06",
     pronoun: "him",
+    firstName: "shu",
+    lastName: "kai",
   },
   {
     name: "<@!283122911710019584>", //Sherie
     birthday: "26/07",
     pronoun: "her",
+    firstName: "sherie",
+    lastName: "",
   },
   {
     name: "<@!264569094294994944>", //Keng Hong
     birthday: "03/08",
     pronoun: "him",
+    firstName: "keng",
+    lastName: "hong",
   },
   {
     name: "<@!283074031383478273>", //Youjing
     birthday: "30/08",
     pronoun: "her",
+    firstName: "you",
+    lastName: "jing",
   },
   {
     name: "<@!283072384892665862>", //Ian
     birthday: "20/09",
     pronoun: "him",
+    firstName: "ian",
+    lastName: "",
   },
   {
     name: "<@!190039418541703168>", //Jingjing
     birthday: "22/09",
     pronoun: "her",
+    firstName: "jing",
+    lastName: "jing",
   },
   {
     name: "<@!286150477458964481>", //Mingkai
     birthday: "24/09",
     pronoun: "him",
+    firstName: "ming",
+    lastName: "kai",
   },
   {
     name: "<@!284965559412588555>", //Meijie
     birthday: "06/10",
     pronoun: "her",
+    firstName: "mei",
+    lastName: "jie",
   },
   {
     name: "<@!225238258152374272>", //Yifan
     birthday: "18/10",
     pronoun: "him",
+    firstName: "yi",
+    lastName: "fan",
   },
   {
     name: "<@!283193894680657920>", //Xinyi
     birthday: "19/10",
     pronoun: "her",
+    firstName: "xin",
+    lastName: "yi",
   },
   {
     name: "<@!283100749343490048>", //Esther
     birthday: "08/11",
     pronoun: "her",
+    firstName: "esther",
+    lastName: "",
   },
   {
     name: "<@!284967696603414530>", //Hexiang
     birthday: "15/11",
     pronoun: "him",
+    firstName: "he",
+    lastName: "xiang",
   },
   {
     name: "<@!283372253306159104>", //Jiyuan
     birthday: "09/12",
     pronoun: "him",
+    firstName: "ji",
+    lastName: "yuan",
   },
 ];
+
+async function callUrbanApi(nameString) {
+  const options = {
+    method: "GET",
+    url: "https://mashape-community-urban-dictionary.p.rapidapi.com/define",
+    params: { term: nameString },
+    headers: {
+      "X-RapidAPI-Host": "mashape-community-urban-dictionary.p.rapidapi.com",
+      "X-RapidAPI-Key": "19da498aadmshd1081c0101cbca8p17776djsnc06d17dbaf4b",
+    },
+  };
+
+  try {
+    const response = await axios.request(options);
+    return response.data.list;
+  } catch (error) {
+    return [];
+  }
+}
+
+async function urbanDictionary(firstName, lastName) {
+  let count = 0;
+  let payload;
+  let noResult = false;
+  let data = [];
+  while (data.length == 0 && !noResult) {
+    switch (count) {
+      case 0:
+        payload = firstName + lastName;
+        break;
+      case 1:
+        payload = firstName;
+        break;
+      case 2:
+        payload = lastName;
+        break;
+      default:
+        payload = "";
+        noResult = true;
+        break;
+    }
+    if (payload != "") {
+      data = await callUrbanApi(payload);
+    }
+    count++;
+  }
+  if (data.length == 0) {
+    return { success: false, payload: firstName + lastName };
+  }
+  const randomIndex = Math.floor(Math.random() * data.length);
+  const randomDefinition = data[randomIndex];
+  return {
+    success: true,
+    payload: firstName + lastName,
+    definition: randomDefinition.definition,
+    permalink: randomDefinition.permalink,
+    word: randomDefinition.word,
+    example: randomDefinition.example,
+    author: randomDefinition.author,
+    written_on: new Date(randomDefinition.written_on),
+  };
+}
 
 bot.login(token);
 bot.on("ready", () => {
@@ -146,6 +255,21 @@ bot.on("ready", () => {
         if (classmate.birthday == date) {
           channel.send(
             `It's ${classmate.name}'s birthday today! Show ${classmate.pronoun} some love!`
+          );
+          urbanDictionary(classmate.firstName, classmate.lastName).then(
+            (result) => {
+              channel.send(
+                `Urban Dictionary: **${result.payload}**\n>>> **${
+                  result.word
+                }**\n${result.definition}\n*${result.example}*\nby **${
+                  result.author
+                }** ${result.written_on.toLocaleString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}\n<${result.permalink}>`
+              );
+            }
           );
         }
       });
@@ -227,7 +351,7 @@ bot.on("message", (msg) => {
     msg.channel.send(
       `**__Commands List:__**\n;start - start caring for ${user} \n;user <tag> - start caring for somebody else \n;time <time in 24hr clock> - change time to show care \n;stop - stop caring for ${user}`
     );
-  }
+  } else if (msg.content.startsWith(";testingfeature")) {}
 });
 
 port = process.env.PORT;
