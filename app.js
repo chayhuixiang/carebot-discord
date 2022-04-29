@@ -359,7 +359,7 @@ bot.on("message", (msg) => {
       `**__Commands List:__**\n;start - start caring for ${user} \n;user <tag> - start caring for somebody else \n;time <time in 24hr clock> - change time to show care \n;stop - stop caring for ${user}`
     );
   } else if (msg.content.startsWith(";testingfeature")) {
-    urbanDictionary('ho','chi').then(
+    urbanDictionary('kevin','').then(
       (result) => {
         if (result.success){
           msg.channel.send(
